@@ -20,7 +20,7 @@ default_args = {
     'email_on_retry': False
 }
 
-dag = DAG('udac_example_dag',
+dag = DAG('project_dag',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
           schedule_interval='0 * * * *',
@@ -36,7 +36,7 @@ create_tables = PostgresOperator(
     sql="create_tables.sql"
 )
 
-stage_events_to_redshift = StageToRedshiftOperator(
+stage_events_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
     table='staging_events',
@@ -48,7 +48,7 @@ stage_events_to_redshift = StageToRedshiftOperator(
     region='us-west-2'
 )
 
-stage_songs_to_redshift = StageToRedshiftOperator(
+stage_songs_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
     dag=dag,
     table='staging_songs',
@@ -112,8 +112,8 @@ run_quality_checks = DataQualityOperator(
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
 
 start_operator >> create_tables
-create_tables >> stage_events_to_redshift >> load_songplays_table
-create_tables >> stage_songs_to_redshift >> load_songplays_table
+create_tables >> stage_events_redshift >> load_songplays_table
+create_tables >> stage_songs_redshift >> load_songplays_table
 load_songplays_table >> load_user_dimension_table >> run_quality_checks
 load_songplays_table >> load_song_dimension_table >> run_quality_checks
 load_songplays_table >> load_artist_dimension_table >> run_quality_checks
