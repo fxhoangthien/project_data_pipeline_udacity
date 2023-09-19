@@ -6,7 +6,7 @@ class LoadDimensionOperator(BaseOperator):
 
     ui_color = '#80BD9E'
     insert_sql = """
-        TRUNCATE TABLE {};
+        DELETE TABLE {};
         INSERT INTO {}
         {};
         COMMIT; """
