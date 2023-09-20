@@ -6,14 +6,16 @@ class LoadDimensionOperator(BaseOperator):
 
     ui_color = '#80BD9E'
     insert_sql = """
-        DELETE TABLE {};
         INSERT INTO {}
         {};
-        COMMIT; """
+    """
+    
+    truncate_sql = """
+        TRUNCATE TABLE {};
+    """
 
     @apply_defaults
     def __init__(self,
-
                  redshift_conn_id="",
                  table="",
                  load_sql_stmt="",
@@ -27,9 +29,13 @@ class LoadDimensionOperator(BaseOperator):
 
     def execute(self, context):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
+
+        if self.truncate_table:
+            self.log.info(f"Truncating dimension table: {self.table}")
+            redshift.run(LoadDimensionOperator.truncate_sql.format(self.table))
+
         self.log.info(f"Loading dimension table {self.table} in Redshift")
         formatted_sql = LoadDimensionOperator.insert_sql.format(
-            self.table,
             self.table,
             self.load_sql_stmt )
         redshift.run(formatted_sql)
